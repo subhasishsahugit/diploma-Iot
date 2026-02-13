@@ -1,0 +1,7 @@
+﻿Name,Quantity,Component
+"UArduino Uno",1," Arduino Uno R3"
+"U1",1,"PCF8574-based, 39 (0x27) LCD 16 x 2 (I2C)"
+"BAT2",1," 9V Battery"
+"SEN1",1," Soil Moisture Sensor"
+"MDC motor",1," DC Motor"
+"K1",1," Relay SPDT"
