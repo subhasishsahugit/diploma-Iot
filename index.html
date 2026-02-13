@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Smart Irrigation System - IoT Diploma Project with Arduino, Soil Moisture Sensor, and LCD Display">
+    <meta name="keywords" content="IoT, Arduino, Smart Irrigation, Diploma Project, Automation, Agriculture">
+    <meta name="author" content="Subhasish Sahu">
+    <title>Smart Irrigation System - IoT Diploma Project</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E💧%3C/text%3E%3C/svg%3E">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/arduino.min.js"></script>
+    
+    <!-- PDF.js for PDF rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Papa Parse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <style>
+        /* ============================================
+           GLOBAL STYLES & CSS VARIABLES
+           ============================================ */
+        :root {
+            /* Color Palette - Dark Theme */
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --bg-code: #1e2228;
+            --border-color: #30363d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent-primary: #58a6ff;
+            --accent-secondary: #1f6feb;
+            --accent-success: #3fb950;
+            --accent-warning: #d29922;
+            --accent-danger: #f85149;
+            --accent-purple: #bc8cff;
+            --accent-pink: #ff7b72;
+            --accent-cyan: #79c0ff;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.5);
+            --shadow-glow: 0 0 20px rgba(88, 166, 255, 0.3);
+            
+            /* Typography */
+            --font-mono: 'Fira Code', 'JetBrains Mono', 'Space Mono', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            
+            /* Spacing */
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-xxl: 3rem;
+            
+            /* Border Radius */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            
+            /* Transitions */
+            --transition-fast: 150ms ease-in-out;
+            --transition-base: 250ms ease-in-out;
+            --transition-slow: 350ms ease-in-out;
+        }
+        
+        /* ============================================
+           RESET & BASE STYLES
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+        
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        ::selection {
+            background: var(--accent-secondary);
+            color: var(--text-primary);
+        }
+        
+        /* ============================================
+           SCROLLBAR CUSTOMIZATION
+           ============================================ */
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: var(--radius-md);
+            border: 2px solid var(--bg-secondary);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+        
+        /* ============================================
+           ANIMATED BACKGROUND
+           ============================================ */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .animated-bg::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, rgba(88, 166, 255, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(188, 140, 255, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 20%, rgba(63, 185, 80, 0.03) 0%, transparent 50%);
+            animation: bgAnimation 30s ease infinite;
+        }
+        
+        @keyframes bgAnimation {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(-5%, 5%) rotate(120deg); }
+            66% { transform: translate(5%, -5%) rotate(240deg); }
+        }
+        
+        /* ============================================
+           HEADER SECTION
+           ============================================ */
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: var(--spacing-xl) var(--spacing-md);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        
+        .header-icon {
+            font-size: 3rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .header h1 {
+            font-family: var(--font-mono);
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-primary), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+        
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            margin-top: var(--spacing-xs);
+        }
+        
+        .header-nav {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            transition: all var(--transition-base);
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .nav-btn:hover {
+            background: var(--accent-secondary);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+        
+        .nav-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* ============================================
+           MAIN CONTAINER
+           ============================================ */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--spacing-xl) var(--spacing-md);
+        }
+        
+        /* ============================================
+           STATS SECTION
+           ============================================ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            transition: all var(--transition-base);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-purple));
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--accent-primary);
+        }
+        
+        .stat-label {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .stat-value {
+            font-family: var(--font-mono);
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .stat-icon {
+            font-size: 1.5rem;
+        }
+        
+        /* ============================================
+           SECTION STYLES
+           ============================================ */
+        .section {
+            margin-bottom: var(--spacing-xxl);
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 2px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+        
+        .section-title {
+            font-family: var(--font-mono);
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .section-icon {
+            font-size: 1.5rem;
+        }
+        
+        .section-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .action-btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            transition: all var(--transition-base);
+        }
+        
+        .action-btn:hover {
+            background: var(--accent-secondary);
+            border-color: var(--accent-primary);
+        }
+        
+        .action-btn.primary {
+            background: var(--accent-secondary);
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+        }
+        
+        .action-btn.primary:hover {
+            background: var(--accent-primary);
+            box-shadow: var(--shadow-glow);
+        }
+        
+        /* ============================================
+           CODE BLOCK STYLES
+           ============================================ */
+        .code-container {
+            background: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .code-header {
+            background: var(--bg-tertiary);
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .code-filename {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .code-lang-badge {
+            background: var(--accent-secondary);
+            color: var(--text-primary);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .code-wrapper {
+            position: relative;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .code-wrapper pre {
+            margin: 0;
+            padding: var(--spacing-lg);
+            overflow-x: auto;
+        }
+        
+        .code-wrapper code {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .line-numbers {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+            padding: var(--spacing-lg) var(--spacing-sm);
+            text-align: right;
+            user-select: none;
+            border-right: 1px solid var(--border-color);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .code-content {
+            padding-left: 50px;
+        }
+        
+        /* ============================================
+           PDF VIEWER STYLES
+           ============================================ */
+        .pdf-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .pdf-controls {
+            background: var(--bg-tertiary);
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+        
+        .pdf-nav {
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+        }
+        
+        .pdf-page-info {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            min-width: 100px;
+            text-align: center;
+        }
+        
+        .pdf-viewer {
+            background: #525659;
+            padding: var(--spacing-lg);
+            overflow-x: auto;
+            display: flex;
+            justify-content: center;
+            min-height: 400px;
+        }
+        
+        #pdf-canvas {
+            max-width: 100%;
+            height: auto;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        /* ============================================
+           TABLE STYLES
+           ============================================ */
+        .table-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .table-header {
+            background: var(--bg-tertiary);
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-title {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+            max-height: 500px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+        
+        thead {
+            position: sticky;
+            top: 0;
+            background: var(--bg-tertiary);
+            z-index: 10;
+        }
+        
+        th {
+            padding: var(--spacing-md);
+            text-align: left;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            border-bottom: 2px solid var(--border-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        td {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        tbody tr {
+            transition: background var(--transition-fast);
+        }
+        
+        tbody tr:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* ============================================
+           CHART STYLES
+           ============================================ */
+        .chart-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-top: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
+        
+        /* ============================================
+           INFO CARDS
+           ============================================ */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+        
+        .info-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            transition: all var(--transition-base);
+        }
+        
+        .info-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--accent-primary);
+        }
+        
+        .info-card-title {
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .info-card-content {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+        
+        .info-card-content ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .info-card-content li {
+            padding: var(--spacing-xs) 0;
+            display: flex;
+            align-items: start;
+            gap: var(--spacing-sm);
+        }
+        
+        .info-card-content li::before {
+            content: '▸';
+            color: var(--accent-primary);
+            font-weight: bold;
+        }
+        
+        /* ============================================
+           FOOTER
+           ============================================ */
+        .footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: var(--spacing-xl) var(--spacing-md);
+            margin-top: var(--spacing-xxl);
+            text-align: center;
+        }
+        
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+        
+        .footer-link {
+            color: var(--accent-primary);
+            text-decoration: none;
+            transition: color var(--transition-fast);
+        }
+        
+        .footer-link:hover {
+            color: var(--accent-cyan);
+            text-decoration: underline;
+        }
+        
+        /* ============================================
+           BADGE STYLES
+           ============================================ */
+        .badge {
+            display: inline-block;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .badge-success {
+            background: rgba(63, 185, 80, 0.2);
+            color: var(--accent-success);
+            border: 1px solid var(--accent-success);
+        }
+        
+        .badge-info {
+            background: rgba(88, 166, 255, 0.2);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+        }
+        
+        .badge-warning {
+            background: rgba(210, 153, 34, 0.2);
+            color: var(--accent-warning);
+            border: 1px solid var(--accent-warning);
+        }
+        
+        /* ============================================
+           LOADING STATES
+           ============================================ */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: var(--spacing-xxl);
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: var(--spacing-md);
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* ============================================
+           RESPONSIVE DESIGN
+           ============================================ */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .section-title {
+                font-size: 1.3rem;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .code-wrapper {
+                max-height: 400px;
+            }
+            
+            .table-wrapper {
+                max-height: 400px;
+            }
+        }
+        
+        /* ============================================
+           UTILITY CLASSES
+           ============================================ */
+        .text-center { text-align: center; }
+        .text-muted { color: var(--text-muted); }
+        .mt-1 { margin-top: var(--spacing-md); }
+        .mt-2 { margin-top: var(--spacing-lg); }
+        .mb-1 { margin-bottom: var(--spacing-md); }
+        .mb-2 { margin-bottom: var(--spacing-lg); }
+        .hidden { display: none; }
+        
+        /* ============================================
+           ADDITIONAL ANIMATIONS
+           ============================================ */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg"></div>
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <span class="header-icon">💧</span>
+                <div>
+                    <h1>Smart Irrigation System</h1>
+                    <p class="header-subtitle">IoT Diploma Project | Arduino-based Automation</p>
+                </div>
+            </div>
+            <nav class="header-nav">
+                <a href="#arduino-code" class="nav-btn">📝 Code</a>
+                <a href="#pdf-section" class="nav-btn">📄 Documentation</a>
+                <a href="#bom-section" class="nav-btn">📊 BOM</a>
+                <a href="https://github.com/subhasishsahugit/diploma-Iot" class="nav-btn" target="_blank">⭐ GitHub</a>
+            </nav>
+        </div>
+    </header>
+    
+    <!-- Main Container -->
+    <main class="container">
+        
+        <!-- Statistics Section -->
+        <div class="stats-grid fade-in">
+            <div class="stat-card">
+                <div class="stat-label">🔧 Components</div>
+                <div class="stat-value">
+                    <span class="stat-icon">⚙️</span>
+                    <span>7</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">📝 Lines of Code</div>
+                <div class="stat-value">
+                    <span class="stat-icon">💻</span>
+                    <span>34</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">🎯 Automation Level</div>
+                <div class="stat-value">
+                    <span class="stat-icon">🤖</span>
+                    <span>100%</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">💡 Power Source</div>
+                <div class="stat-value">
+                    <span class="stat-icon">🔋</span>
+                    <span>9V</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Project Overview Section -->
+        <section class="section fade-in">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="section-icon">🎯</span>
+                    Project Overview
+                </h2>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3 class="info-card-title">
+                        <span>🌱</span>
+                        System Description
+                    </h3>
+                    <div class="info-card-content">
+                        <p>An intelligent irrigation system that automatically controls water flow based on soil moisture levels. The system uses Arduino Uno for control logic, a soil moisture sensor for real-time monitoring, and an LCD display for status visualization.</p>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="info-card-title">
+                        <span>⚡</span>
+                        Key Features
+                    </h3>
+                    <div class="info-card-content">
+                        <ul>
+                            <li>Real-time soil moisture monitoring</li>
+                            <li>Automatic motor control via relay</li>
+                            <li>16x2 I2C LCD display</li>
+                            <li>Low power consumption</li>
+                            <li>Easy installation and maintenance</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="info-card-title">
+                        <span>🔬</span>
+                        Technical Specs
+                    </h3>
+                    <div class="info-card-content">
+                        <ul>
+                            <li>Microcontroller: Arduino Uno R3</li>
+                            <li>Display: PCF8574 LCD 16x2</li>
+                            <li>Sensor: Soil Moisture Sensor</li>
+                            <li>Power: 9V Battery</li>
+                            <li>Communication: I2C Protocol</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Arduino Code Section -->
+        <section id="arduino-code" class="section fade-in">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="section-icon">💻</span>
+                    Arduino Source Code
+                </h2>
+                <div class="section-actions">
+                    <button class="action-btn" onclick="copyCode()">📋 Copy</button>
+                    <a href="smart_irrigation_system1.ino" download class="action-btn primary">⬇️ Download</a>
+                </div>
+            </div>
+            
+            <div class="code-container">
+                <div class="code-header">
+                    <div class="code-filename">
+                        <span>📄</span>
+                        smart_irrigation_system1.ino
+                    </div>
+                    <span class="code-lang-badge">Arduino C++</span>
+                </div>
+                <div class="code-wrapper">
+                    <pre><code class="language-arduino" id="arduino-source">#include &lt;Wire.h&gt; 
+#include &lt;LiquidCrystal_I2C.h&gt;
+
+int water; // Variable to store moisture level
+LiquidCrystal_I2C lcd(0x27, 16, 2); // Address of the I2C LCD and its dimensions
+
+void setup() {
+  pinMode(3, OUTPUT); // Output pin for relay board, this will send signal to the relay
+  pinMode(6, INPUT); // Input pin coming from soil sensor
+  lcd.init(); // Initialize the LCD
+  lcd.backlight(); // Turn on the backlight
+}
+
+void loop() {
+  water = digitalRead(6); // Reading the signal from the soil sensor
+  if (water == HIGH) { // If water level is full then cut the relay
+    digitalWrite(3, LOW); // Low is to cut the relay
+  } else {
+    digitalWrite(3, HIGH); // High to continue providing signal and water supply
+  }
+  
+  // Display moisture level and motor state on LCD
+  lcd.clear(); // Clear the LCD
+  
+  lcd.setCursor(0, 0); // Set cursor to first row
+  lcd.print("Moisture: "); // Print label
+  lcd.print(water == HIGH ? "Dry" : "Wet"); // Print moisture level
+  
+  lcd.setCursor(0, 1); // Set cursor to second row
+  lcd.print("Motor: "); // Print label
+  lcd.print(water == HIGH ? "on" : "off"); // Print motor state
+  
+  delay(400); // Delay for stability
+}</code></pre>
+                </div>
+            </div>
+            
+            <!-- Code Analysis -->
+            <div class="info-grid mt-2">
+                <div class="info-card">
+                    <h3 class="info-card-title">
+                        <span>📚</span>
+                        Libraries Used
+                    </h3>
+                    <div class="info-card-content">
+                        <ul>
+                            <li><strong>Wire.h</strong> - I2C communication protocol</li>
+                            <li><strong>LiquidCrystal_I2C.h</strong> - I2C LCD control</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="info-card-title">
+                        <span>🔌</span>
+                        Pin Configuration
+                    </h3>
+                    <div class="info-card-content">
+                        <ul>
+                            <li><strong>Pin 3</strong> - Relay control (OUTPUT)</li>
+                            <li><strong>Pin 6</strong> - Soil sensor (INPUT)</li>
+                            <li><strong>A4/A5</strong> - I2C (SDA/SCL)</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="info-card-title">
+                        <span>⚙️</span>
+                        Logic Flow
+                    </h3>
+                    <div class="info-card-content">
+                        <ul>
+                            <li>Read soil moisture sensor</li>
+                            <li>HIGH = Dry soil → Motor ON</li>
+                            <li>LOW = Wet soil → Motor OFF</li>
+                            <li>Update LCD display</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- PDF Documentation Section -->
+        <section id="pdf-section" class="section fade-in">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="section-icon">📄</span>
+                    Project Documentation (PDF)
+                </h2>
+                <div class="section-actions">
+                    <a href="Smart Irrigation system.pdf" download class="action-btn primary">⬇️ Download PDF</a>
+                </div>
+            </div>
+            
+            <div class="pdf-container">
+                <div class="pdf-controls">
+                    <div class="pdf-nav">
+                        <button class="action-btn" onclick="previousPage()" id="prev-btn">◀ Previous</button>
+                        <span class="pdf-page-info" id="page-info">Page 1 of 1</span>
+                        <button class="action-btn" onclick="nextPage()" id="next-btn">Next ▶</button>
+                    </div>
+                    <div class="pdf-nav">
+                        <button class="action-btn" onclick="zoomOut()">🔍-</button>
+                        <span class="pdf-page-info" id="zoom-info">100%</span>
+                        <button class="action-btn" onclick="zoomIn()">🔍+</button>
+                    </div>
+                </div>
+                <div class="pdf-viewer">
+                    <canvas id="pdf-canvas"></canvas>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Bill of Materials Section -->
+        <section id="bom-section" class="section fade-in">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="section-icon">📊</span>
+                    Bill of Materials (BOM)
+                </h2>
+                <div class="section-actions">
+                    <button class="action-btn" onclick="exportCSV()">📥 Export CSV</button>
+                    <a href="bom.csv" download class="action-btn primary">⬇️ Download</a>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title">
+                        <span>📋</span>
+                        Component List
+                    </div>
+                    <span class="badge badge-info" id="component-count">Loading...</span>
+                </div>
+                <div class="table-wrapper">
+                    <table id="bom-table">
+                        <thead>
+                            <tr>
+                                <th>S.No</th>
+                                <th>Name</th>
+                                <th>Quantity</th>
+                                <th>Component</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bom-tbody">
+                            <tr>
+                                <td colspan="4" class="loading">
+                                    <div class="spinner"></div>
+                                    Loading components...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Component Chart -->
+            <div class="chart-container">
+                <h3 class="section-title" style="font-size: 1.3rem; margin-bottom: var(--spacing-lg);">
+                    <span class="section-icon">📈</span>
+                    Component Distribution
+                </h3>
+                <div class="chart-wrapper">
+                    <canvas id="component-chart"></canvas>
+                </div>
+            </div>
+        </section>
+        
+        <!-- System Architecture Section -->
+        <section class="section fade-in">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="section-icon">🏗️</span>
+                    System Architecture
+                </h2>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3 class="info-card-title">
+                        <span>🔄</span>
+                        Working Principle
+                    </h3>
+                    <div class="info-card-content">
+                        <p>The soil moisture sensor continuously monitors the moisture level in the soil. When the soil is dry (sensor output HIGH), the Arduino activates the relay to turn on the water pump. When the soil becomes wet (sensor output LOW), the relay is deactivated, stopping the water flow. The LCD displays real-time status of both moisture level and motor state.</p>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="info-card-title">
+                        <span>🔗</span>
+                        Connections
+                    </h3>
+                    <div class="info-card-content">
+                        <ul>
+                            <li>Soil Sensor → Arduino Pin 6</li>
+                            <li>Relay Module → Arduino Pin 3</li>
+                            <li>LCD SDA → Arduino A4</li>
+                            <li>LCD SCL → Arduino A5</li>
+                            <li>Power Supply → 9V Battery</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="info-card-title">
+                        <span>✅</span>
+                        Advantages
+                    </h3>
+                    <div class="info-card-content">
+                        <ul>
+                            <li>Water conservation</li>
+                            <li>Reduced manual intervention</li>
+                            <li>Cost-effective solution</li>
+                            <li>Easy to scale and maintain</li>
+                            <li>Real-time monitoring</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Future Enhancements Section -->
+        <section class="section fade-in">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="section-icon">🚀</span>
+                    Future Enhancements
+                </h2>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3 class="info-card-title">
+                        <span>📱</span>
+                        IoT Integration
+                    </h3>
+                    <div class="info-card-content">
+                        <p>Add WiFi/GSM module for remote monitoring and control via mobile app. Send notifications when irrigation starts/stops.</p>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="info-card-title">
+                        <span>🌡️</span>
+                        Multi-Sensor System
+                    </h3>
+                    <div class="info-card-content">
+                        <p>Integrate temperature, humidity, and light sensors for comprehensive environmental monitoring and smart decision making.</p>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="info-card-title">
+                        <span>☀️</span>
+                        Solar Power
+                    </h3>
+                    <div class="info-card-content">
+                        <p>Replace battery with solar panel and rechargeable battery for sustainable, long-term operation in outdoor environments.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>💧 Smart Irrigation System - IoT Diploma Project</p>
+            <p class="text-muted">Built with ❤️ using Arduino, I2C LCD, and Soil Moisture Sensor</p>
+            <div class="footer-links">
+                <a href="https://github.com/subhasishsahugit/diploma-Iot" class="footer-link" target="_blank">GitHub Repository</a>
+                <a href="Smart Irrigation system.pdf" download class="footer-link">Download Documentation</a>
+                <a href="bom.csv" download class="footer-link">Download BOM</a>
+                <a href="smart_irrigation_system1.ino" download class="footer-link">Download Code</a>
+            </div>
+            <p class="text-muted mt-1" style="font-size: 0.8rem;">
+                © 2026 Subhasish Sahu | This page contains ~1000 LOC of nerdy goodness 🤓
+            </p>
+        </div>
+    </footer>
+    
+    <!-- JavaScript -->
+    <script>
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Initializing Smart Irrigation System Dashboard...');
+            
+            // Initialize syntax highlighting
+            hljs.highlightAll();
+            
+            // Load CSV data
+            loadBOM();
+            
+            // Load PDF
+            loadPDF();
+            
+            // Add fade-in animation to sections
+            observeSections();
+            
+            console.log('✅ Dashboard initialized successfully!');
+        });
+        
+        // ============================================
+        // CODE FUNCTIONALITY
+        // ============================================
+        function copyCode() {
+            const code = document.getElementById('arduino-source').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('✅ Code copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('❌ Failed to copy code');
+            });
+        }
+        
+        // ============================================
+        // CSV/BOM FUNCTIONALITY
+        // ============================================
+        async function loadBOM() {
+            try {
+                const response = await fetch('bom.csv');
+                const csvText = await response.text();
+                
+                Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        displayBOMTable(results.data);
+                        createComponentChart(results.data);
+                    },
+                    error: function(error) {
+                        console.error('Error parsing CSV:', error);
+                        document.getElementById('bom-tbody').innerHTML = 
+                            '<tr><td colspan="4" style="color: var(--accent-danger); text-align: center;">Error loading BOM data</td></tr>';
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading BOM:', error);
+                document.getElementById('bom-tbody').innerHTML = 
+                    '<tr><td colspan="4" style="color: var(--accent-danger); text-align: center;">Failed to load BOM file</td></tr>';
+            }
+        }
+        
+        function displayBOMTable(data) {
+            const tbody = document.getElementById('bom-tbody');
+            tbody.innerHTML = '';
+            
+            data.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><strong>${row.Name || 'N/A'}</strong></td>
+                    <td><span class="badge badge-success">${row.Quantity || '1'}</span></td>
+                    <td>${row.Component || 'N/A'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            // Update component count
+            document.getElementById('component-count').textContent = `${data.length} Components`;
+        }
+        
+        function createComponentChart(data) {
+            const ctx = document.getElementById('component-chart');
+            if (!ctx) return;
+            
+            const labels = data.map(row => row.Component || 'Unknown');
+            const quantities = data.map(row => parseInt(row.Quantity) || 1);
+            const colors = [
+                'rgba(88, 166, 255, 0.8)',
+                'rgba(188, 140, 255, 0.8)',
+                'rgba(63, 185, 80, 0.8)',
+                'rgba(255, 123, 114, 0.8)',
+                'rgba(210, 153, 34, 0.8)',
+                'rgba(121, 192, 255, 0.8)',
+                'rgba(255, 184, 108, 0.8)'
+            ];
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: quantities,
+                        backgroundColor: colors,
+                        borderColor: 'rgba(48, 54, 61, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: '#c9d1d9',
+                                font: {
+                                    family: 'Fira Code, monospace',
+                                    size: 11
+                                },
+                                padding: 15
+                            }
+                        },
+                        title: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(33, 38, 45, 0.95)',
+                            titleColor: '#c9d1d9',
+                            bodyColor: '#c9d1d9',
+                            borderColor: '#30363d',
+                            borderWidth: 1,
+                            padding: 12,
+                            titleFont: {
+                                family: 'Fira Code, monospace',
+                                size: 13
+                            },
+                            bodyFont: {
+                                family: 'Fira Code, monospace',
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function exportCSV() {
+            window.location.href = 'bom.csv';
+        }
+        
+        // ============================================
+        // PDF FUNCTIONALITY
+        // ============================================
+        let pdfDoc = null;
+        let pageNum = 1;
+        let pageRendering = false;
+        let pageNumPending = null;
+        let scale = 1.5;
+        
+        async function loadPDF() {
+            try {
+                // Configure PDF.js worker
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                
+                const loadingTask = pdfjsLib.getDocument('Smart Irrigation system.pdf');
+                pdfDoc = await loadingTask.promise;
+                
+                document.getElementById('page-info').textContent = `Page ${pageNum} of ${pdfDoc.numPages}`;
+                
+                // Initial render
+                renderPage(pageNum);
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+                const canvas = document.getElementById('pdf-canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#f85149';
+                ctx.font = '16px Fira Code';
+                ctx.fillText('Failed to load PDF. Please download to view.', 50, 50);
+            }
+        }
+        
+        function renderPage(num) {
+            if (!pdfDoc) return;
+            
+            pageRendering = true;
+            
+            pdfDoc.getPage(num).then(page => {
+                const canvas = document.getElementById('pdf-canvas');
+                const ctx = canvas.getContext('2d');
+                const viewport = page.getViewport({ scale: scale });
+                
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+                
+                const renderTask = page.render(renderContext);
+                
+                renderTask.promise.then(() => {
+                    pageRendering = false;
+                    if (pageNumPending !== null) {
+                        renderPage(pageNumPending);
+                        pageNumPending = null;
+                    }
+                });
+            });
+            
+            document.getElementById('page-info').textContent = `Page ${num} of ${pdfDoc.numPages}`;
+        }
+        
+        function queueRenderPage(num) {
+            if (pageRendering) {
+                pageNumPending = num;
+            } else {
+                renderPage(num);
+            }
+        }
+        
+        function previousPage() {
+            if (pageNum <= 1) return;
+            pageNum--;
+            queueRenderPage(pageNum);
+        }
+        
+        function nextPage() {
+            if (pageNum >= pdfDoc.numPages) return;
+            pageNum++;
+            queueRenderPage(pageNum);
+        }
+        
+        function zoomIn() {
+            scale += 0.25;
+            document.getElementById('zoom-info').textContent = Math.round(scale * 100) + '%';
+            queueRenderPage(pageNum);
+        }
+        
+        function zoomOut() {
+            if (scale <= 0.5) return;
+            scale -= 0.25;
+            document.getElementById('zoom-info').textContent = Math.round(scale * 100) + '%';
+            queueRenderPage(pageNum);
+        }
+        
+        // ============================================
+        // INTERSECTION OBSERVER FOR ANIMATIONS
+        // ============================================
+        function observeSections() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+            
+            document.querySelectorAll('.fade-in').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+                observer.observe(el);
+            });
+        }
+        
+        // ============================================
+        // SMOOTH SCROLLING
+        // ============================================
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // ============================================
+        // CONSOLE ART
+        // ============================================
+        console.log('%c🌱 Smart Irrigation System 💧', 'color: #58a6ff; font-size: 24px; font-weight: bold; font-family: monospace;');
+        console.log('%cIoT Diploma Project | Arduino-based Automation', 'color: #8b949e; font-size: 14px; font-family: monospace;');
+        console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #30363d;');
+        console.log('%cRepository: https://github.com/subhasishsahugit/diploma-Iot', 'color: #3fb950; font-family: monospace;');
+        console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #30363d;');
+        console.log('%c✨ Features:', 'color: #bc8cff; font-weight: bold; font-family: monospace;');
+        console.log('  • Real-time soil moisture monitoring');
+        console.log('  • Automatic motor control via relay');
+        console.log('  • 16x2 I2C LCD display');
+        console.log('  • Low power consumption');
+        console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #30363d;');
+    </script>
+</body>
+</html>
